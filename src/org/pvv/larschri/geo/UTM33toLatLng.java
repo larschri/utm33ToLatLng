@@ -19,8 +19,8 @@ public class UTM33toLatLng {
      * Type for converted values.
      */
     public static class LatLng {
-        double latitude;
-        double longitude;
+        public final double latitude;
+        public final double longitude;
         private LatLng(double lat, double lng) {
             this.latitude = lat;
             this.longitude = lng;
@@ -31,11 +31,11 @@ public class UTM33toLatLng {
      * The conversion function. See class documentation.
      */
     public static LatLng convert(double easting, double northing) {
-        LatLngGetter g = new LatLngGetter(easting, northing);
-        return parabola(
-                parabola(g.get(0, 0), g.get(1, 0), g.get(2, 0), easting - g.easting),
-                parabola(g.get(0, 1), g.get(1, 1), g.get(2, 1), easting - g.easting),
-                parabola(g.get(0, 2), g.get(1, 2), g.get(2, 2), easting - g.easting),
+        GridLookup g = new GridLookup(easting, northing);
+        return interpolate(
+                interpolate(g.get(0, 0), g.get(1, 0), g.get(2, 0), easting - g.easting),
+                interpolate(g.get(0, 1), g.get(1, 1), g.get(2, 1), easting - g.easting),
+                interpolate(g.get(0, 2), g.get(1, 2), g.get(2, 2), easting - g.easting),
                 northing - g.northing);
     }
 
@@ -47,34 +47,41 @@ public class UTM33toLatLng {
     /**
      * Return f(x), given f(0), f(1), f(2) and x. f is a parabolic function.
      */
-    private static double parabola(double f0, double f1, double f2, double x) {
+    private static double interpolate(double f0, double f1, double f2, double x) {
         double a = (f2 + f0) / 2 - f1;
         return a * x * x + (f1 - f0 - a) * x + f0;
     }
 
-    private static LatLng parabola(LatLng f0, LatLng f1, LatLng f2, double x) {
+    /**
+     * Same as {@ link #interpolate(double, double, double, double)}, but in {@link LatLng}.
+     */
+    private static LatLng interpolate(LatLng f0, LatLng f1, LatLng f2, double x) {
         return new LatLng(
-                parabola(f0.latitude, f1.latitude, f2.latitude, x / GRANULARITY),
-                parabola(f0.longitude, f1.longitude, f2.longitude, x / GRANULARITY));
+                interpolate(f0.latitude, f1.latitude, f2.latitude, x / GRANULARITY),
+                interpolate(f0.longitude, f1.longitude, f2.longitude, x / GRANULARITY));
     }
 
-    private static class LatLngGetter {
-        private final int easting, northing;
-        LatLngGetter(double easting, double northing) {
-            this.easting = round(easting);
-            this.northing = round(northing);
-        }
-
-        private static int round(double value) {
-            return ((int) value) / GRANULARITY * GRANULARITY;
+    /**
+     * Class for grid lookups. Easting and northing are rounded (floored) and
+     * used to look up known conversions.
+     */
+    private static class GridLookup {
+        final int easting, northing;
+        GridLookup(double easting, double northing) {
+            this.easting = (int) easting / GRANULARITY * GRANULARITY;
+            this.northing = (int) northing / GRANULARITY * GRANULARITY;
         }
 
         LatLng get(int e, int n) {
-            return MAPPING.get(String.format("%s,%s", easting + e * GRANULARITY, northing + n * GRANULARITY));
+            return GRID.get(String.format("%s,%s", easting + e * GRANULARITY, northing + n * GRANULARITY));
         }
     }
 
-    private static Map<String, LatLng> MAPPING = ImmutableMap.<String, LatLng>builder()
+    /**
+     * The grid used for lookups. Values correspond to those provided at
+     * http://norgeskart.no/
+     */
+    private static Map<String, LatLng> GRID = ImmutableMap.<String, LatLng>builder()
             .put("-50000,6500000", new LatLng(58.294318615,5.599072875))
             .put("-50000,6550000", new LatLng(58.737273719,5.478760473))
             .put("-50000,6600000", new LatLng(59.180039899,5.354770266))
