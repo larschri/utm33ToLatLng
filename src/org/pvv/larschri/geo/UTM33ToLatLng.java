@@ -13,7 +13,7 @@ import java.util.Map;
  * results by polynomial interpolation from a set of known conversions. The
  * known points are provided by © Kartverket (http://kartverket.no/).
  */
-public class UTM33toLatLng {
+public class UTM33ToLatLng {
     /**
      * Type for converted values.
      */
