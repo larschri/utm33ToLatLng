@@ -5,13 +5,7 @@ import java.util.Map;
 
 /**
  * Class for converting "UTM33" coordinates from Kartverket to
- * longitude/latitude. Kartverket uses UTM33 for all of Norway in some maps,
- * although UTM33 is not designed to cover that much. UTM has large errors when
- * used like this and all UTM software does not handle this in one unique way.
- * Kartverket has defined their conversion formula in a closed source library
- * for Microsoft Windows (Skt2lan1.dll), and this class calculates corresponding
- * results by polynomial interpolation from a set of known conversions. The
- * known points are provided by © Kartverket (http://kartverket.no/).
+ * longitude/latitude. See https://github.com/larschri/utm33ToLatLng.
  */
 public class UTM33ToLatLng {
     /**
@@ -27,7 +21,7 @@ public class UTM33ToLatLng {
     }
 
     /**
-     * The conversion function. See class documentation.
+     * The conversion function. See https://github.com/larschri/utm33ToLatLng.
      */
     public static LatLng convert(double easting, double northing) {
         GridLookup g = new GridLookup(easting, northing);
