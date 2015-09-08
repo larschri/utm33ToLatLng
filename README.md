@@ -1,27 +1,28 @@
 # utm33ToLatLng
 
-Simple Java library for converting "UTM33" coordinates from Kartverket to
-longitude/latitude. Kartverket uses UTM33 for all of Norway in some maps,
-although UTM33 is not designed to cover that much. UTM has large errors when
-used like this, and UTM software does not handle this in one unique way.
-Kartverket has defined their conversion formula in a closed source library
-for Microsoft Windows (Skt2lan1.dll), and this library calculates corresponding
-results by polynomial interpolation from a set of known conversions. The
-known points are provided by © Kartverket (http://kartverket.no/)
+Simple Java library for translating "UTM33" coordinates from Kartverket to longitude/latitude.
 
-Example usage:
-```java
-import org.pvv.larschri.geo.UTM33ToLatLng;
-...
-UTM33ToLatLng.LatLng galdhopiggen =
-    UTM33ToLatLng.convert(146001.89, 6851888.74);
-System.out.println(galdhopiggen.latitude + " " + galdhopiggen.longitude);
-```
+# Background
+
+Kartverket uses UTM33 to cover all of Norway (26° of longitude), although UTM33 is designed to be accurate only in a narrow band of 6° longitude. Conversion of coordinates outside the normal 6° longitude band are supported in various ways by different libraries. This means that general UTM conversion software may translate these coordinates very different from Kartverket or not at all. Kartverket has defined the actual translation formula in a proprietary library for Microsoft Windows only (Skt2lan1.dll), so it is not publicly available.
+
+# How it works
+
+Utm33ToLatLng translates "UTM33" cooordinates from Kartverket by using polynomial interpolation from a grid (50x50 kilometers) of known conversions. The known conversion points are provided by © Kartverket (http://kartverket.no/).
+
 # Accuracy
 
+Accuracy for this library means how closely it approximates the original conversion by Kartverket. The accuracy can be increased by adding more conversion points to get a finer granularity.
+
 There are no guarantees about the accuracy, and it has not been thorougly tested.
-The results are "fairly close" to the official conversion by Kartverket, while
-some other general UTM software differs wildly.
+
+# Example code
+```java
+UTM33ToLatLng.LatLng galdhopiggen =
+	UTM33ToLatLng.convert(146001.89, 6851888.74);
+assert Math.abs(galdhopiggen.latitude - 61.636432) < 0.00001;
+assert Math.abs(galdhopiggen.longitude - 8.312486) < 0.00001;
+```
 
 # Thanks!
-Thanks to © Kartverket for making Norwegian geo data publicly available!
+Thanks to © Kartverket for making geographic data for Norway publicly available!
